@@ -1,0 +1,12 @@
+{
+    "name": "vijaymahes/project-allocation-system",
+    "description": "Student Project Allocation System in PHP",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Vijay Mahes",
+            "email": "Vijaypradhap2004@gmail.com"
+        }
+    ],
+    "require": {}
+}
