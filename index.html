@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Project Allocation</title>
+    <link rel="icon" href="favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="Robot" content="index,follow,project,allocation,distribution,subject"/>
+    <meta name="Description" content="Online Project Allocation is available over here"/>
+    <!-- Load outfit google font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="main.css"> 
+</head>
+<body>
+    <h1>Student Project Allocation System</h1>
+    
+    <form id="loginForm" onsubmit="handleLogin(event)">
+        <table align="center">
+            <tr>
+                <th colspan="2">Student Login</th>
+            </tr>
+            <tr>
+                <td>Student Id:</td>
+                <td><input type="text" id="student_id" class="textbox" placeholder="e.g. 1234" required></td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td><input type="password" id="student_passwd" class="textbox" placeholder="e.g. password" required></td>
+            </tr>
+            <tr>
+                <td colspan="2" align="center">
+                    <input type="submit" value="Login" class="button shadow">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div id="errorMsg" class="msg"></div>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+    <div class="center-links">
+        <a href="admin/admin_login.html">Admin / Faculty Login</a>
+        <a href="about_us.html">About Us</a>
+    </div> 
+
+    <br>
+    <div class="news-banner">
+        <marquee id="newsMarquee" direction="left" scrollamount="5">Loading news...</marquee>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/mock-db.js"></script>
+    <script>
+        // Check if already logged in
+        if (MockDB.getCurrentStudent()) {
+            window.location.href = 'student/index.html';
+        }
+
+        // Show live process news
+        const processInfo = MockDB.getProcess();
+        document.getElementById('newsMarquee').innerText = processInfo.news;
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const id = document.getElementById('student_id').value.trim();
+            const pass = document.getElementById('student_passwd').value.trim();
+            
+            const result = MockDB.loginStudent(id, pass);
+            if (result.success) {
+                window.location.href = 'student/index.html';
+            } else {
+                document.getElementById('errorMsg').innerText = result.message;
+            }
+        }
+    </script>
+</body>
+</html>

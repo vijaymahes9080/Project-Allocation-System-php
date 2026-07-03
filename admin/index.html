@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Project Allocation - Admin Dashboard</title>
+    <link rel="icon" href="../favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    <style>
+        .admin-container {
+            width: 100%;
+            max-width: 960px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        .panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .panel-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            color: #ffd8a8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid var(--card-border);
+            padding: 10px;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+        .data-table th {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Student Project Allocation System</h1>
+    
+    <div style="text-align: center; margin-bottom: 15px; width: 100%; max-width: 960px;">
+        <h3>
+            Role: <span id="faculty_role">ADMIN</span> &emsp; 
+            Faculty ID: <span id="faculty_id"></span> &emsp; 
+            Name: <span id="faculty_name"></span>
+        </h3>
+        <div style="display: flex; justify-content: center; gap: 15px; margin-top: 10px;">
+            <a href="#" onclick="handleLogout()" class="log_out shadow">Logout</a>
+            <a href="../change_pass/change_password.html" style="align-self: center;">Change Password</a>
+        </div>
+    </div>
+
+    <div class="msg" id="adminMsg"></div>
+
+    <div class="admin-container">
+        <!-- Live Configuration & Allocation Process Control -->
+        <div class="panel">
+            <div class="panel-title">Allocation Control & Status</div>
+            <p><strong>Current Process News:</strong> <span id="process_news" style="color: #ffd8a8;"></span></p>
+            <div class="action-bar">
+                <button onclick="runAllocationAlgorithm()" class="button" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Run Project Allocation Algorithm</button>
+                <button onclick="resetAllocation()" class="button" style="background: linear-gradient(135deg, #eb3014 0%, #f15c1e 100%);">Reset Allocations</button>
+            </div>
+        </div>
+
+        <!-- Student Listing -->
+        <div class="panel">
+            <div class="panel-title">Student Directory</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>CPI</th>
+                        <th>Group Leader</th>
+                        <th>Project Allocated</th>
+                    </tr>
+                </thead>
+                <tbody id="student_tbody">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Project Directory -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>Project List</span>
+                <button onclick="toggleProjectForm()" class="button" style="padding: 6px 12px; width: auto; font-size: 0.85rem;">+ Add New Project</button>
+            </div>
+            
+            <div id="projectFormDiv" style="display: none; border-bottom: 1px solid var(--card-border); padding-bottom: 15px; margin-bottom: 15px;">
+                <h4>Create Project Definition</h4>
+                <div class="form-grid">
+                    <div>
+                        <label>Project ID:</label>
+                        <input type="text" id="new_proj_id" class="textbox" placeholder="e.g. 105">
+                    </div>
+                    <div>
+                        <label>Definition:</label>
+                        <input type="text" id="new_proj_def" class="textbox" placeholder="e.g. Chatbot Integration">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label>Description:</label>
+                        <textarea id="new_proj_desc" class="textbox" style="height: 60px; resize: vertical;" placeholder="Brief details about the project..."></textarea>
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button onclick="saveNewProject()" class="button" style="padding: 8px 16px; width: auto;">Save Project</button>
+                    <button onclick="toggleProjectForm()" class="button" style="padding: 8px 16px; width: auto; background: grey;">Cancel</button>
+                </div>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Project ID</th>
+                        <th>Definition</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="project_tbody">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/mock-db.js"></script>
+    <script>
+        const faculty = MockDB.getCurrentFaculty();
+        if (!faculty) {
+            window.location.href = 'admin_login.html?msg=AUTHENTICATION REQUIRED';
+        }
+
+        // Fill faculty info
+        document.getElementById('faculty_id').innerText = faculty.faculty_id;
+        document.getElementById('faculty_name').innerText = faculty.name;
+        document.getElementById('faculty_role').innerText = faculty.admin ? 'ADMIN' : 'FACULTY';
+
+        function loadAdminPanel() {
+            // Process status
+            const proc = MockDB.getProcess();
+            document.getElementById('process_news').innerText = proc.news;
+
+            // Students List
+            const students = MockDB.getStudents();
+            const groups = MockDB.getGroups();
+            const projects = MockDB.getProjects();
+            
+            const studentTbody = document.getElementById('student_tbody');
+            studentTbody.innerHTML = '';
+            
+            students.forEach(st => {
+                // Find allocation info
+                let group = groups.find(g => g.members.includes(st.student_id));
+                let leaderStr = 'None';
+                let allocatedStr = 'Pending';
+                
+                if (group) {
+                    leaderStr = group.leader === st.student_id ? 'Self (Leader)' : group.leader;
+                    if (st.allocated && group.project) {
+                        const proj = projects.find(p => p.project_id === group.project);
+                        allocatedStr = proj ? `${proj.definition} (${group.project})` : `ID: ${group.project}`;
+                    }
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${st.student_id}</td>
+                    <td>${st.first_name} ${st.last_name}</td>
+                    <td>${st.cpi}</td>
+                    <td>${leaderStr}</td>
+                    <td style="font-weight: 600; color: ${st.allocated ? '#84fab0' : '#ffd8a8'};">${allocatedStr}</td>
+                `;
+                studentTbody.appendChild(tr);
+            });
+
+            // Projects List
+            const projectTbody = document.getElementById('project_tbody');
+            projectTbody.innerHTML = '';
+            projects.forEach(pr => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${pr.project_id}</td>
+                    <td>${pr.definition}</td>
+                    <td>${pr.description}</td>
+                    <td>
+                        <button onclick="deleteProject('${pr.project_id}')" class="button" style="background: red; padding: 4px 10px; width: auto; font-size: 0.8rem; box-shadow: none;">Delete</button>
+                    </td>
+                `;
+                projectTbody.appendChild(tr);
+            });
+        }
+
+        // Project actions
+        function toggleProjectForm() {
+            const form = document.getElementById('projectFormDiv');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function saveNewProject() {
+            const id = document.getElementById('new_proj_id').value.trim();
+            const def = document.getElementById('new_proj_def').value.trim();
+            const desc = document.getElementById('new_proj_desc').value.trim();
+
+            if (!id || !def || !desc) {
+                showMsg('Please fill all fields', true);
+                return;
+            }
+
+            const projects = MockDB.getProjects();
+            if (projects.find(p => p.project_id === id)) {
+                showMsg('Project ID already exists', true);
+                return;
+            }
+
+            projects.push({ project_id: id, definition: def, description: desc });
+            MockDB.setProjects(projects);
+            
+            // Reset fields
+            document.getElementById('new_proj_id').value = '';
+            document.getElementById('new_proj_def').value = '';
+            document.getElementById('new_proj_desc').value = '';
+            toggleProjectForm();
+            showMsg('Project saved successfully!');
+            loadAdminPanel();
+        }
+
+        function deleteProject(id) {
+            let projects = MockDB.getProjects();
+            projects = projects.filter(p => p.project_id !== id);
+            MockDB.setProjects(projects);
+            showMsg('Project deleted.');
+            loadAdminPanel();
+        }
+
+        // Project Allocation Algorithm simulation!
+        function runAllocationAlgorithm() {
+            const groups = MockDB.getGroups();
+            const students = MockDB.getStudents();
+            
+            // Calculate average CPI for each group
+            groups.forEach(g => {
+                let totalCpi = 0;
+                let validCount = 0;
+                g.members.forEach(memberId => {
+                    const mem = students.find(s => s.student_id === memberId);
+                    if (mem) {
+                        totalCpi += parseFloat(mem.cpi);
+                        validCount++;
+                    }
+                });
+                g.avgCpi = validCount > 0 ? (totalCpi / validCount) : 0;
+            });
+
+            // Sort groups by average CPI descending
+            groups.sort((a, b) => b.avgCpi - a.avgCpi);
+
+            // Keep track of allocated projects
+            const allocatedProjects = new Set();
+
+            groups.forEach(g => {
+                let allocated = false;
+                // Try choices in order of preference
+                for (let i = 0; i < g.choices.length; i++) {
+                    const choice = g.choices[i];
+                    if (!allocatedProjects.has(choice)) {
+                        g.project = choice;
+                        allocatedProjects.add(choice);
+                        allocated = true;
+                        break;
+                    }
+                }
+                
+                // Update all members of this group as allocated
+                g.members.forEach(memberId => {
+                    const mem = students.find(s => s.student_id === memberId);
+                    if (mem) {
+                        mem.allocated = allocated ? 1 : 0;
+                    }
+                });
+            });
+
+            MockDB.setGroups(groups);
+            MockDB.setStudents(students);
+            
+            // Update process status
+            const proc = MockDB.getProcess();
+            proc.news = "Allocation process has completed. Projects assigned based on average CPI ranking!";
+            MockDB.setProcess(proc);
+
+            showMsg("Allocation Algorithm finished running!");
+            loadAdminPanel();
+        }
+
+        function resetAllocation() {
+            const groups = MockDB.getGroups();
+            const students = MockDB.getStudents();
+
+            groups.forEach(g => {
+                delete g.project;
+                delete g.avgCpi;
+            });
+            students.forEach(s => {
+                s.allocated = 0;
+            });
+
+            MockDB.setGroups(groups);
+            MockDB.setStudents(students);
+
+            const proc = MockDB.getProcess();
+            proc.news = "Round 1 Project Selection has started! Please select and prioritize your choices.";
+            MockDB.setProcess(proc);
+
+            showMsg("All allocations reset.");
+            loadAdminPanel();
+        }
+
+        function showMsg(txt, isError = false) {
+            const el = document.getElementById('adminMsg');
+            el.innerText = txt;
+            el.style.color = isError ? '#ff6b6b' : '#84fab0';
+            setTimeout(() => el.innerText = '', 4000);
+        }
+
+        function handleLogout() {
+            MockDB.logout();
+            window.location.href = 'admin_login.html';
+        }
+
+        // Initialize admin panel
+        loadAdminPanel();
+    </script>
+</body>
+</html>

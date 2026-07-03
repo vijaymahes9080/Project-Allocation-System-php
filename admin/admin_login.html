@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Project Allocation - Admin Login</title>
+    <link rel="icon" href="../favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="Robot" content="index,follow,project,allocation,distribution,subject"/>
+    <meta name="Description" content="Online Project Allocation is available over here"/>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+</head>
+<body>
+    <h1>Student Project Allocation System</h1>
+    
+    <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+        <table align="center">
+            <tr>
+                <th colspan="2">Admin / Faculty Login</th>
+            </tr>
+            <tr>
+                <td>Admin/Faculty Id:</td>
+                <td><input type="text" id="admin_id" class="textbox" placeholder="e.g. 4545" required></td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td><input type="password" id="admin_passwd" class="textbox" placeholder="e.g. password" required></td>
+            </tr>
+            <tr>
+                <td colspan="2" align="center">
+                    <input type="submit" value="Login" class="button shadow">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div id="errorMsg" class="msg"></div>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+    <div class="center-links">
+        <a href="../index.html" class="back shadow"><= Back to Student Portal</a>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/mock-db.js"></script>
+    <script>
+        // Check if already logged in
+        if (MockDB.getCurrentFaculty()) {
+            window.location.href = 'index.html';
+        }
+
+        function handleAdminLogin(event) {
+            event.preventDefault();
+            const id = document.getElementById('admin_id').value.trim();
+            const pass = document.getElementById('admin_passwd').value.trim();
+            
+            const result = MockDB.loginFaculty(id, pass);
+            if (result.success) {
+                window.location.href = 'index.html';
+            } else {
+                document.getElementById('errorMsg').innerText = result.message;
+            }
+        }
+    </script>
+</body>
+</html>
