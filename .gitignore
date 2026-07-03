@@ -1,0 +1,27 @@
+# Composer packages
+/vendor/
+
+# IDE configurations
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Environment and local files
+.env
+.env.local
+.env.*.local
+*.log
+
+# Temp/Cache
+/bootstrap/cache/
+/storage/
